@@ -10,9 +10,6 @@
 #pragma once
 
 #include "Object.h"
-#ifndef __MACOSX__
-#    include <shared_mutex>
-#endif
 
 struct CoordsXY;
 
