@@ -10,6 +10,9 @@
 #pragma once
 
 #include "Object.h"
+#ifndef __MACOSX__
+#    include <shared_mutex>
+#endif
 
 struct CoordsXY;
 
@@ -27,14 +30,17 @@ private:
     struct SpecialEntry
     {
         uint32_t Index{};
-        int32_t Length{};
-        int32_t Rotation{};
-        int32_t Variation{};
+        uint8_t Length{};
+        uint8_t Rotation{};
+        uint8_t Variation{};
         bool Grid{};
         bool Underground{};
     };
 
     static constexpr auto NUM_IMAGES_IN_ENTRY = 19;
+
+    bool _hasSpecial;
+    mutable uint32_t _specialEntryCache[0xff][0xff][0xff][2][2];
 
 public:
     rct_string_id NameStringId{};
@@ -47,7 +53,6 @@ public:
     uint32_t DefaultGridEntry{};
     uint32_t DefaultUndergroundEntry{};
     std::vector<SpecialEntry> SpecialEntries;
-    std::vector<uint32_t> SpecialEntryMap;
 
     colour_t Colour{};
     uint8_t Rotations{};
@@ -66,5 +71,5 @@ public:
     void DrawPreview(rct_drawpixelinfo* dpi, int32_t width, int32_t height) const override;
 
     uint32_t GetImageId(
-        const CoordsXY& position, int32_t length, int32_t rotation, int32_t offset, bool grid, bool underground) const;
+        const CoordsXY& position, uint8_t length, uint8_t rotation, uint8_t offset, bool grid, bool underground) const;
 };
