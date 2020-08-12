@@ -33,7 +33,7 @@
 // This string specifies which version of network stream current build uses.
 // It is used for making sure only compatible builds get connected, even within
 // single OpenRCT2 version.
-#define NETWORK_STREAM_VERSION "26"
+#define NETWORK_STREAM_VERSION "27"
 #define NETWORK_STREAM_ID OPENRCT2_VERSION "-" NETWORK_STREAM_VERSION
 
 static Peep* _pickup_peep = nullptr;
@@ -1721,8 +1721,10 @@ bool NetworkBase::ProcessConnection(NetworkConnection& connection)
                 // could not read anything from socket
                 break;
         }
-    } while (packetStatus == NETWORK_READPACKET_MORE_DATA || packetStatus == NETWORK_READPACKET_SUCCESS);
+    } while (packetStatus == NETWORK_READPACKET_SUCCESS);
+
     connection.SendQueuedPackets();
+
     if (!connection.ReceivedPacketRecently())
     {
         if (!connection.GetLastDisconnectReason())
@@ -1731,6 +1733,7 @@ bool NetworkBase::ProcessConnection(NetworkConnection& connection)
         }
         return false;
     }
+
     return true;
 }
 
@@ -3329,26 +3332,36 @@ int32_t network_get_num_players()
 
 const char* network_get_player_name(uint32_t index)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     return static_cast<const char*>(gNetwork.player_list[index]->Name.c_str());
 }
 
 uint32_t network_get_player_flags(uint32_t index)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     return gNetwork.player_list[index]->Flags;
 }
 
 int32_t network_get_player_ping(uint32_t index)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     return gNetwork.player_list[index]->Ping;
 }
 
 int32_t network_get_player_id(uint32_t index)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     return gNetwork.player_list[index]->Id;
 }
 
 money32 network_get_player_money_spent(uint32_t index)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     return gNetwork.player_list[index]->MoneySpent;
 }
 
@@ -3374,11 +3387,15 @@ std::string network_get_player_public_key_hash(uint32_t id)
 
 void network_add_player_money_spent(uint32_t index, money32 cost)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     gNetwork.player_list[index]->AddMoneySpent(cost);
 }
 
 int32_t network_get_player_last_action(uint32_t index, int32_t time)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     if (time && platform_get_ticks() > gNetwork.player_list[index]->LastActionTime + time)
     {
         return -999;
@@ -3388,17 +3405,23 @@ int32_t network_get_player_last_action(uint32_t index, int32_t time)
 
 void network_set_player_last_action(uint32_t index, int32_t command)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     gNetwork.player_list[index]->LastAction = NetworkActions::FindCommand(command);
     gNetwork.player_list[index]->LastActionTime = platform_get_ticks();
 }
 
 CoordsXYZ network_get_player_last_action_coord(uint32_t index)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     return gNetwork.player_list[index]->LastActionCoord;
 }
 
 void network_set_player_last_action_coord(uint32_t index, const CoordsXYZ& coord)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     if (index < gNetwork.player_list.size())
     {
         gNetwork.player_list[index]->LastActionCoord = coord;
@@ -3407,6 +3430,8 @@ void network_set_player_last_action_coord(uint32_t index, const CoordsXYZ& coord
 
 uint32_t network_get_player_commands_ran(uint32_t index)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     return gNetwork.player_list[index]->CommandsRan;
 }
 
@@ -3422,11 +3447,16 @@ int32_t network_get_player_index(uint32_t id)
 
 uint8_t network_get_player_group(uint32_t index)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+
     return gNetwork.player_list[index]->Group;
 }
 
 void network_set_player_group(uint32_t index, uint32_t groupindex)
 {
+    Guard::IndexInRange(index, gNetwork.player_list);
+    Guard::IndexInRange(groupindex, gNetwork.group_list);
+
     gNetwork.player_list[index]->Group = gNetwork.group_list[groupindex]->Id;
 }
 
@@ -3442,6 +3472,8 @@ int32_t network_get_group_index(uint8_t id)
 
 uint8_t network_get_group_id(uint32_t index)
 {
+    Guard::IndexInRange(index, gNetwork.group_list);
+
     return gNetwork.group_list[index]->Id;
 }
 
@@ -3728,11 +3760,15 @@ rct_string_id network_get_action_name_string_id(uint32_t index)
 
 int32_t network_can_perform_action(uint32_t groupindex, uint32_t index)
 {
+    Guard::IndexInRange(groupindex, gNetwork.group_list);
+
     return gNetwork.group_list[groupindex]->CanPerformAction(index);
 }
 
 int32_t network_can_perform_command(uint32_t groupindex, int32_t index)
 {
+    Guard::IndexInRange(groupindex, gNetwork.group_list);
+
     return gNetwork.group_list[groupindex]->CanPerformCommand(index);
 }
 
