@@ -27,9 +27,9 @@ private:
     struct SpecialEntry
     {
         uint32_t Index{};
-        uint8_t Length{};
-        uint8_t Rotation{};
-        uint8_t Variation{};
+        int8_t Length{};
+        int8_t Rotation{};
+        int8_t Variation{};
         bool Grid{};
         bool Underground{};
     };
@@ -37,7 +37,7 @@ private:
     static constexpr auto NUM_IMAGES_IN_ENTRY = 19;
 
     bool _hasSpecial;
-    mutable uint32_t _specialEntryCache[0xff][0xff][0xff][2][2];
+    mutable uint32_t _specialEntryCache[16][16][16][2][2];
 
 public:
     rct_string_id NameStringId{};
@@ -68,5 +68,5 @@ public:
     void DrawPreview(rct_drawpixelinfo* dpi, int32_t width, int32_t height) const override;
 
     uint32_t GetImageId(
-        const CoordsXY& position, uint8_t length, uint8_t rotation, uint8_t offset, bool grid, bool underground) const;
+        const CoordsXY& position, int8_t length, int8_t rotation, int8_t offset, bool grid, bool underground) const;
 };

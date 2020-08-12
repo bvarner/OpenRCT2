@@ -107,9 +107,9 @@ void TerrainSurfaceObject::ReadJson(IReadObjectContext* context, const json_t* r
         {
             SpecialEntry entry;
             entry.Index = ObjectJsonHelpers::GetInteger(el, "index");
-            entry.Length = ObjectJsonHelpers::GetInteger(el, "length", 0xff);
-            entry.Rotation = ObjectJsonHelpers::GetInteger(el, "rotation", 0xff);
-            entry.Variation = ObjectJsonHelpers::GetInteger(el, "variation", 0xff);
+            entry.Length = ObjectJsonHelpers::GetInteger(el, "length", -1);
+            entry.Rotation = ObjectJsonHelpers::GetInteger(el, "rotation", -1);
+            entry.Variation = ObjectJsonHelpers::GetInteger(el, "variation", -1);
             entry.Grid = ObjectJsonHelpers::GetBoolean(el, "grid");
             entry.Underground = ObjectJsonHelpers::GetBoolean(el, "underground");
             SpecialEntries.push_back(std::move(entry));
@@ -122,7 +122,7 @@ void TerrainSurfaceObject::ReadJson(IReadObjectContext* context, const json_t* r
 }
 
 uint32_t TerrainSurfaceObject::GetImageId(
-    const CoordsXY& position, uint8_t length, uint8_t rotation, uint8_t offset, bool grid, bool underground) const
+    const CoordsXY& position, int8_t length, int8_t rotation, int8_t offset, bool grid, bool underground) const
 {
     uint32_t result = (underground ? DefaultUndergroundEntry : (grid ? DefaultGridEntry : DefaultEntry));
 
@@ -131,17 +131,17 @@ uint32_t TerrainSurfaceObject::GetImageId(
         // Look for a matching special
         auto variation = ((position.x << 1) & 0b10) | (position.y & 0b01);
 
-        uint32_t cachedValue = _specialEntryCache[length][rotation][variation][grid][underground];
+        uint32_t cachedValue = _specialEntryCache[length + 1][rotation + 1][variation + 1][grid][underground];
         if (cachedValue == 0) {
             for (const auto& special : SpecialEntries)
             {
                 if (special.Grid == grid && special.Underground == underground
-                    && (special.Length == 0xff || special.Length == length)
-                    && (special.Rotation == 0xff || special.Rotation == rotation)
-                    && (special.Variation == 0xff || special.Variation == variation))
+                    && (special.Length == -1 || special.Length == length)
+                    && (special.Rotation == -1 || special.Rotation == rotation)
+                    && (special.Variation == -1 || special.Variation == variation))
                 {
                     result = special.Index;
-                    _specialEntryCache[length][rotation][variation][grid][underground] = result;
+                    _specialEntryCache[length + 1][rotation + 1][variation + 1][grid][underground] = result;
                     break;
                 }
             }
